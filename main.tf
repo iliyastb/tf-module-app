@@ -63,6 +63,14 @@ resource "aws_vpc_security_group_ingress_rule" "ingress" {
   to_port           = 22
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ingress" {
+  security_group_id = aws_security_group.main.id
+  cidr_ipv4         = var.allow_app_to
+  from_port         = var.port
+  ip_protocol       = "tcp"
+  to_port           = var.port
+}
+
 resource "aws_vpc_security_group_egress_rule" "egress" {
   security_group_id = aws_security_group.main.id
   cidr_ipv4         = "0.0.0.0/0"
