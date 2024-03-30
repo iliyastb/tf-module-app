@@ -19,10 +19,14 @@ resource "aws_launch_template" "main" {
     )
   }
 
-#  user_data = filebase64("${path.module}/example.sh")
+  user_data = base64encode(templatefile("${path.module}/userdata.sh", {
+    component = var.component
+    env = var.env
+  } ))
 }
 
 resource "aws_autoscaling_group" "main" {
+  name = "${var.component}-${var.env}"
   desired_capacity   = var.desired_capacity
   max_size           = var.max_size
   min_size           = var.min_size
@@ -31,5 +35,11 @@ resource "aws_autoscaling_group" "main" {
   launch_template {
     id      = aws_launch_template.main.id
     version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    propagate_at_launch = false
+    value               = "${var.component}-${var.env}"
   }
 }
