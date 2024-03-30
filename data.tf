@@ -3,3 +3,5 @@ data "aws_ami" "ami" {
   name_regex  = "centos8-ansible"
   owners      = ["self"]
 }
+
+data "aws_caller_identity" "account" {}

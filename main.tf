@@ -2,10 +2,11 @@ resource "aws_launch_template" "main" {
   name = "${var.component}-${var.env}"
   image_id = data.aws_ami.ami.id
   instance_type = var.instance_type
+  vpc_security_group_ids = [aws_security_group.main.id]
 
-#  iam_instance_profile {
-#    name = "test"
-#  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.main.name
+  }
 
   instance_market_options {
     market_type = "spot"
@@ -42,4 +43,28 @@ resource "aws_autoscaling_group" "main" {
     propagate_at_launch = false
     value               = "${var.component}-${var.env}"
   }
+}
+
+resource "aws_security_group" "main" {
+  name        = "${var.component}-${var.env}"
+  description = "${var.component}-${var.env}"
+  vpc_id      = var.vpc_id
+
+  tags = merge(
+    var.tags, { Name = "${var.component}-${var.env}" }
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress" {
+  security_group_id = aws_security_group.main.id
+  cidr_ipv4         = var.bastion_cidr
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress" {
+  security_group_id = aws_security_group.main.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
 }
