@@ -1,7 +1,7 @@
 resource "aws_launch_template" "main" {
-  name = "${var.component}-${var.env}"
-  image_id = data.aws_ami.ami.id
-  instance_type = var.instance_type
+  name                   = "${var.component}-${var.env}"
+  image_id               = data.aws_ami.ami.id
+  instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.main.id]
 
   iam_instance_profile {
@@ -22,15 +22,15 @@ resource "aws_launch_template" "main" {
 
   user_data = base64encode(templatefile("${path.module}/userdata.sh", {
     component = var.component
-    env = var.env
+    env       = var.env
   } ))
 }
 
 resource "aws_autoscaling_group" "main" {
-  name = "${var.component}-${var.env}"
-  desired_capacity   = var.desired_capacity
-  max_size           = var.max_size
-  min_size           = var.min_size
+  name                = "${var.component}-${var.env}"
+  desired_capacity    = var.desired_capacity
+  max_size            = var.max_size
+  min_size            = var.min_size
   vpc_zone_identifier = var.subnets
 
   launch_template {
@@ -50,26 +50,35 @@ resource "aws_security_group" "main" {
   description = "${var.component}-${var.env}"
   vpc_id      = var.vpc_id
 
+  ingress {
+    description = "APP"
+    from_port   = var.port
+    to_port     = var.port
+    protocol    = "tcp"
+    cidr_blocks = var.allow_app_to
+  }
+
   tags = merge(
     var.tags, { Name = "${var.component}-${var.env}" }
   )
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress1" {
+resource "aws_vpc_security_group_ingress_rule" "ingress" {
   security_group_id = aws_security_group.main.id
   cidr_ipv4         = var.bastion_cidr
   from_port         = 22
   ip_protocol       = "tcp"
   to_port           = 22
+  description       = "SSH"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress2" {
-  security_group_id = aws_security_group.main.id
-  cidr_ipv4         = var.allow_app_to
-  from_port         = var.port
-  ip_protocol       = "tcp"
-  to_port           = var.port
-}
+#resource "aws_vpc_security_group_ingress_rule" "ingress2" {
+#  security_group_id = aws_security_group.main.id
+#  cidr_ipv4         = var.allow_app_to
+#  from_port         = var.port
+#  ip_protocol       = "tcp"
+#  to_port           = var.port
+#}
 
 resource "aws_vpc_security_group_egress_rule" "egress" {
   security_group_id = aws_security_group.main.id
