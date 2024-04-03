@@ -32,7 +32,7 @@ resource "aws_autoscaling_group" "main" {
   max_size            = var.max_size
   min_size            = var.min_size
   vpc_zone_identifier = var.subnets
-  target_group_arns = [aws_lb_target_group.main.arn]
+  target_group_arns   = [aws_lb_target_group.main.arn]
 
   launch_template {
     id      = aws_launch_template.main.id
@@ -59,32 +59,25 @@ resource "aws_security_group" "main" {
     cidr_blocks = var.allow_app_to
   }
 
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.bastion_cidr
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
   tags = merge(
     var.tags, { Name = "${var.component}-${var.env}" }
   )
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ingress" {
-  security_group_id = aws_security_group.main.id
-  cidr_ipv4         = var.bastion_cidr
-  from_port         = 22
-  ip_protocol       = "tcp"
-  to_port           = 22
-  description       = "SSH"
-}
-
-#resource "aws_vpc_security_group_ingress_rule" "ingress2" {
-#  security_group_id = aws_security_group.main.id
-#  cidr_ipv4         = var.allow_app_to
-#  from_port         = var.port
-#  ip_protocol       = "tcp"
-#  to_port           = var.port
-#}
-
-resource "aws_vpc_security_group_egress_rule" "egress" {
-  security_group_id = aws_security_group.main.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1"
 }
 
 resource "aws_lb_target_group" "main" {
@@ -93,11 +86,11 @@ resource "aws_lb_target_group" "main" {
   protocol = "HTTP"
   vpc_id   = var.vpc_id
   health_check {
-    enabled = true
-    healthy_threshold = 2
+    enabled             = true
+    healthy_threshold   = 2
     unhealthy_threshold = 5
-    interval = 5
-    timeout = 4
+    interval            = 5
+    timeout             = 4
   }
   tags = merge(
     var.tags, { Name = "${var.component}-${var.env}" }
