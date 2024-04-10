@@ -67,6 +67,14 @@ resource "aws_security_group" "main" {
     cidr_blocks = var.bastion_cidr
   }
 
+  ingress {
+    description = "PROM"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = var.monitoring_nodes
+  }
+
   egress {
     from_port        = 0
     to_port          = 0
