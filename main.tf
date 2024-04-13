@@ -46,6 +46,19 @@ resource "aws_autoscaling_group" "main" {
   }
 }
 
+resource "aws_autoscaling_policy" "asg-cpu-rule" {
+  name                   = "CPUTrackingPolicy"
+  autoscaling_group_name = aws_autoscaling_group.main.name
+  policy_type            = "TargetTrackingScaling"
+  cooldown               = 180
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 40.0
+  }
+}
+
 resource "aws_security_group" "main" {
   name        = "${var.component}-${var.env}"
   description = "${var.component}-${var.env}"
@@ -99,7 +112,7 @@ resource "aws_lb_target_group" "main" {
     unhealthy_threshold = 5
     interval            = 5
     timeout             = 4
-    path = "/health"
+    path                = "/health"
   }
   tags = merge(
     var.tags, { Name = "${var.component}-${var.env}" }
