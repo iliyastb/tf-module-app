@@ -47,10 +47,10 @@ resource "aws_autoscaling_group" "main" {
 }
 
 resource "aws_autoscaling_policy" "asg-cpu-rule" {
-  name                   = "CPUTrackingPolicy"
   autoscaling_group_name = aws_autoscaling_group.main.name
+  name                   = "CPUTrackingPolicy"
   policy_type            = "TargetTrackingScaling"
-  cooldown               = 180
+
   target_tracking_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ASGAverageCPUUtilization"
