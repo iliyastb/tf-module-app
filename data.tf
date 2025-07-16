@@ -1,6 +1,6 @@
 data "aws_ami" "ami" {
   most_recent = true
-  name_regex  = "centos8-ansible"
+  name_regex  = "centos-8-with-ansible"
   owners      = ["self"]
 }
 
