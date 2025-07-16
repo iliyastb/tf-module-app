@@ -1,7 +1,6 @@
 resource "aws_launch_template" "main" {
   name                   = "${var.component}-${var.env}"
-#  image_id               = data.aws_ami.ami.id
-  image_id               = "ami-07d68e852b0dbe7e5"
+  image_id               = data.aws_ami.ami.id
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.main.id]
 
